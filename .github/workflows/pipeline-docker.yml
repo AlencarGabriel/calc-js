@@ -49,4 +49,4 @@ jobs:
             -v ${{ github.workspace }}:/app \
             -w /app \
             node:20 \
-            sh -c "npm ci && npm publish"
+            sh -c 'echo "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" > ~/.npmrc && npm publish'
