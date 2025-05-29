@@ -1,7 +1,7 @@
 {
   "name": "calc-js-totvs-live-coding",
   "author": "alencargabriel",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple calculator module",
   "main": "index.js",
   "scripts": {
