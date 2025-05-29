@@ -1,0 +1,52 @@
+name: Node.js CI/CD with Docker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Publicar no npm?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t calc-js -f ${{ github.workspace }}/ci/docker/Dockerfile .
+
+      - name: Run tests in Docker container
+        run: docker run --rm calc-js
+
+  publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'release' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t calc-js -f ${{ github.workspace }}/ci/docker/Dockerfile .
+
+      - name: Run npm publish in Docker container
+        run: |
+          docker run --rm \
+            -e NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }} \
+            -v ${{ github.workspace }}:/app \
+            -w /app \
+            node:20 \
+            sh -c "npm ci && npm publish"
